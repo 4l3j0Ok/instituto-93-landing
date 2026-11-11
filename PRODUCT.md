@@ -60,8 +60,8 @@ Oferta 2026 por sede:
 
 ## Evidence on Hand
 
-- `logo.png` en la raíz del proyecto (1280x1280).
-- `hero.jpg` en la raíz (1376x671): foto real del edificio patrimonial del instituto, esquina con plátanos, cielo azul profundo, cartel "30 años" en el balcón. Resolución modesta: recomendar una versión de mayor resolución.
+- `public/img/logo.png`: logo usado por el sitio.
+- `public/img/hero.jpg`: foto real del edificio patrimonial del instituto, esquina con plátanos, cielo azul profundo, cartel "30 años" en el balcón. Resolución modesta: recomendar una versión de mayor resolución.
 - Datos institucionales, carreras y proceso de inscripción del sitio oficial (arriba).
 - Tríptico institucional en el sitio actual: https://isfdyt93-bue.infd.edu.ar/sitio/wp-content/uploads/2023/09/is93_triptico_frente-1000x773.jpg
 - No hay fotografías propias, testimonios, cifras de empleabilidad ni nombres de convenios universitarios confirmados: no inventarlos. Cualquier imagen o testimonio ilustrativo debe estar marcado como placeholder.
