@@ -1,0 +1,37 @@
+---
+import '@fontsource-variable/public-sans';
+import '@fontsource/libre-caslon-text/400.css';
+import '@fontsource/libre-caslon-text/400-italic.css';
+import '@fontsource/libre-caslon-text/700.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b1f4b" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" as="image" href="/img/hero.jpg" fetchpriority="high" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/img/hero.jpg" />
+  </head>
+  <body>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+    <slot />
+  </body>
+</html>

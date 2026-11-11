@@ -1,0 +1,827 @@
+---
+import Base from '../layouts/Base.astro';
+import Arrow from '../components/Arrow.astro';
+import Photo from '../components/Photo.astro';
+import Clip from '../components/Clip.astro';
+import ExpandButton from '../components/ExpandButton.astro';
+import { staticLinks } from '../data/site';
+import { getSiteData, SITE } from '../data/wp';
+
+const data = await getSiteData();
+const { sedes, contact, steps, about, requirements, formsStudents, formsTeachers } = data;
+const title = data.pageTitle;
+const link = data.pageLink;
+
+const sede = contact.places.find((p) => /sede/i.test(p.kind));
+const studentCount = about.students ? Number(about.students.replace(/\./g, '')).toLocaleString('es-AR') : undefined;
+
+const nav = [
+  { label: 'Instituto', href: '#instituto' },
+  { label: 'Carreras', href: '#carreras' },
+  { label: 'Inscripción', href: '#inscripcion' },
+  { label: 'Experiencia', href: '#experiencia' },
+  { label: 'Alumnos y docentes', href: '#comunidad' },
+  { label: 'Contacto', href: '#contacto' },
+];
+
+const quick = [
+  { title: 'Requisitos de inscripción', text: 'Documentación y etapas del proceso', href: link('inscribite') },
+  { title: 'Horarios de cursada', text: 'Planillas de horarios por carrera', href: link('horarios-ciclo-lectivo-2019') },
+  ...(data.calendar ? [{ title: 'Calendario académico', text: 'Calendario institucional en PDF', href: data.calendar }] : []),
+  { title: 'Campus virtual', text: 'Aulas y materiales de cursada', href: staticLinks.campus },
+];
+
+const alumnos = ['horarios-ciclo-lectivo-2019', 'mesas-de-examen', 'becas', 'comunicaciones', '3627-2'].map((slug) => ({
+  label: title(slug),
+  href: link(slug),
+}));
+
+const docentes = [
+  { label: title('resoluciones-vigentes'), href: link('resoluciones-vigentes') },
+  { label: title('concursos-docentes'), href: link('concursos-docentes') },
+  ...(data.calendar ? [{ label: 'Calendario institucional', href: data.calendar }] : []),
+  { label: 'Campus virtual', href: staticLinks.campus },
+];
+
+const leaders = contact.authorities.filter((a) => /^(director|regente|secretario)$/i.test(a.role));
+---
+
+<Base
+  title="ISFT N° 93 «Presidente Arturo Umberto Illia» · Tecnicaturas superiores gratuitas en San Vicente"
+  description="Instituto Superior de Formación Técnica N° 93 de San Vicente. Tecnicaturas superiores gratuitas con título oficial y cursada nocturna. Conocé la oferta académica y cómo inscribirte."
+>
+  <header class="masthead">
+    <div class="container masthead__inner">
+      <a class="brand" href="/" aria-label="ISFT N° 93, inicio">
+        <img src="/img/logo.png" width="56" height="56" alt="" />
+        <span class="brand__text">
+          <span class="brand__name">Instituto Superior de Formación Técnica N° 93</span>
+          <span class="brand__sub">«Presidente Arturo Umberto Illia» · San Vicente</span>
+        </span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
+        <span class="menu-toggle__label">Menú</span>
+        <svg width="20" height="14" viewBox="0 0 20 14" fill="none" aria-hidden="true"><path d="M0 1h20M0 7h20M0 13h20" stroke="currentColor" stroke-width="2" /></svg>
+      </button>
+
+      <nav class="primary-nav" id="menu" aria-label="Principal">
+        <ul>
+          {nav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+        <a class="btn btn--gold btn--compact" href={data.preinscripcion} rel="noopener">Preinscripción</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <section class="hero" aria-labelledby="hero-title">
+      <img
+        class="hero__image"
+        src="/img/hero.jpg"
+        width="1376"
+        height="671"
+        alt="Fachada del edificio del Instituto Superior de Formación Técnica N° 93 entre plátanos, en San Vicente"
+        fetchpriority="high"
+      />
+      <div class="hero__shade" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <h1 id="hero-title">Formación técnica superior, pública y gratuita en San Vicente</h1>
+        <p class="hero__lede">
+          Tecnicaturas con título oficial y cursada nocturna.{studentCount && about.founded
+            ? ` Más de ${studentCount} estudiantes cursan hoy en el instituto que abrió sus puertas en ${about.founded}.`
+            : ''}
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--gold" href={data.preinscripcion} rel="noopener">Preinscribirme</a>
+          <a class="btn btn--ghost" href="#carreras">Ver las carreras</a>
+        </div>
+      </div>
+    </section>
+
+    <nav class="quick" aria-label="Accesos rápidos">
+      <ul class="container quick__list">
+        {quick.map((item) => (
+          <li>
+            <a href={item.href} rel="noopener">
+              <span class="quick__title">{item.title}</span>
+              <span class="quick__text">{item.text}</span>
+              <Arrow class="quick__arrow" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <section class="section" id="carreras" aria-labelledby="carreras-title">
+      <div class="container">
+        <header class="section__head">
+          <h2 id="carreras-title">Oferta académica</h2>
+          <p>Organizada por sede, turno y horario. Elegí la carrera que mejor se ajuste a tu rutina.</p>
+        </header>
+
+        <div class="directory">
+          {sedes.map((s) => (
+            <article class="sede" aria-labelledby={`sede-${s.id}`}>
+              <div class="sede__info">
+                <h3 id={`sede-${s.id}`}>{s.name}</h3>
+                {s.note && <p class="sede__note">{s.note}</p>}
+                <p class="sede__address">{s.address}</p>
+                <p class="sede__detail">{s.detail}</p>
+              </div>
+              <ul class="careers">
+                {s.careers.map((career) => (
+                  <li>
+                    <a href={career.href} rel="noopener">
+                      <span class="career__main">
+                        <span class="career__name">{career.name}</span>
+                        {career.schedule && <span class="career__schedule">{career.schedule}</span>}
+                      </span>
+                      {career.isNew && <span class="career__tag">Nueva</span>}
+                      <Arrow class="career__arrow" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="enroll" id="inscripcion" aria-labelledby="inscripcion-title">
+      <div class="container enroll__grid">
+        <div class="enroll__intro">
+          <h2 id="inscripcion-title">Inscripción en tres etapas</h2>
+          <p>Del formulario online a la confirmación de tu vacante, paso a paso.</p>
+          {requirements.length > 0 && (
+            <div class="enroll__docs">
+              <h3>Documentación para la inscripción formal</h3>
+              <ul>
+                {requirements.map((r) => (
+                  <li>{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+        <ol class="steps">
+          {steps.map((step, i) => (
+            <li class="step">
+              <span class="step__n" aria-hidden="true">{i + 1}</span>
+              <div class="step__body">
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+                <a class:list={['btn', i === 0 ? 'btn--gold' : 'btn--line']} href={step.action.href} rel="noopener">
+                  {step.action.label}
+                </a>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="section experience" id="experiencia" aria-labelledby="experiencia-title">
+      <div class="container experience__head">
+        <div class="experience__intro">
+          <h2 id="experiencia-title">Experiencia</h2>
+          <p>Aulas, actos y egresados: momentos de la vida del instituto.</p>
+        </div>
+        <div class="experience__controls">
+          <button class="carousel__btn" type="button" data-dir="-1" aria-label="Anterior">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M17 10H4m4.5-5L3.5 10l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" /></svg>
+          </button>
+          <button class="carousel__btn carousel__pause" type="button" data-pause aria-label="Pausar desplazamiento" aria-pressed="false">
+            <svg class="i-pause" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3v12M13 3v12" stroke="currentColor" stroke-width="2.4" /></svg>
+            <svg class="i-play" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3l10 6-10 6z" fill="currentColor" /></svg>
+          </button>
+          <button class="carousel__btn" type="button" data-dir="1" aria-label="Siguiente">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h13m-4.5-5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="experience__viewport" data-viewport tabindex="0" role="group" aria-roledescription="carrusel" aria-label="Fotos y videos del instituto">
+        <div class="experience__track" data-track>
+          <div class="slide" role="group" aria-roledescription="diapositiva" aria-label="1 de 5">
+            <Photo
+              loading="eager"
+              src="/img/experience-1.webp"
+              width={1200}
+              height={700}
+              alt="Estudiantes sentados en pupitres escuchando a un docente de pie durante un encuentro en un aula amplia"
+            />
+            <ExpandButton label="Ampliar foto: estudiantes en un aula" />
+          </div>
+          <div class="slide slide--916" role="group" aria-roledescription="diapositiva" aria-label="2 de 5">
+            <Clip
+              src="/img/experience-3.mp4"
+              poster="/img/experience-3-poster.webp"
+              width={720}
+              height={1280}
+              hasAudio
+              caption="Nuestros protagonistas"
+              label="Video: egresados del instituto celebrando la entrega de sus títulos"
+            />
+            <ExpandButton label="Ampliar video: nuestros protagonistas" />
+          </div>
+          <div class="slide" role="group" aria-roledescription="diapositiva" aria-label="3 de 5">
+            <Photo
+              loading="eager"
+              src="/img/experience-2.webp"
+              width={1024}
+              height={684}
+              alt="Frente del edificio de la Universidad Nacional de San Vicente, con su cartelería azul y la leyenda Bienvenidos"
+              caption="Universidad Nacional de San Vicente"
+            />
+            <ExpandButton label="Ampliar foto: Universidad Nacional de San Vicente" />
+          </div>
+          <div class="slide slide--34" role="group" aria-roledescription="diapositiva" aria-label="4 de 5">
+            <Clip
+              src="/img/experience-5.mp4"
+              poster="/img/experience-5-poster.webp"
+              width={720}
+              height={960}
+              label="Video: estudiantes de Enfermería posando en grupo con mochilas azules en un salón con piso de madera"
+            />
+            <ExpandButton label="Ampliar video: estudiantes de Enfermería" />
+          </div>
+          <div class="slide" role="group" aria-roledescription="diapositiva" aria-label="5 de 5">
+            <Photo
+              loading="eager"
+              src="/img/experience-4.webp"
+              width={1080}
+              height={1440}
+              alt="Estudiantes de Enfermería con guardapolvo blanco asistiendo a un acto en un salón con pared verde"
+            />
+            <ExpandButton label="Ampliar foto: acto de Enfermería 2026" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about" id="instituto" aria-labelledby="instituto-title">
+      <div class="container about__grid">
+        <figure class="about__figure">
+          <img
+            src="/img/hero.jpg"
+            width="1376"
+            height="671"
+            loading="lazy"
+            alt="Balcón y portal de ingreso del edificio institucional en la esquina de Av. San Martín"
+          />
+          {sede && <figcaption>Edificio de {sede.address}, {sede.locality}</figcaption>}
+        </figure>
+        <div class="about__text">
+          <h2 id="instituto-title">Una institución emblemática de San Vicente</h2>
+          {about.paragraphs.map((t) => (
+            <p>{t}</p>
+          ))}
+          {about.careersLine && <p>{about.careersLine}</p>}
+          {(studentCount || leaders.length > 0) && (
+            <dl class="facts">
+              {studentCount && (
+                <div><dt>Estudiantes</dt><dd>Más de {studentCount} cursan actualmente</dd></div>
+              )}
+              {leaders.length > 0 && (
+                <div><dt>Autoridades</dt><dd>{leaders.map((a) => `${a.role}: ${a.name}`).join('. ')}</dd></div>
+              )}
+            </dl>
+          )}
+          <p class="about__more">
+            <a class="link" href={link('el-instituto')} rel="noopener">Leer la propuesta institucional <Arrow /></a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--tint" id="comunidad" aria-labelledby="comunidad-title">
+      <div class="container">
+        <header class="section__head">
+          <h2 id="comunidad-title">Alumnos y docentes</h2>
+          <p>Trámites, calendarios y formularios para descargar.</p>
+        </header>
+        <div class="community">
+          <div>
+            <h3>Para estudiantes</h3>
+            <ul class="linklist">
+              {alumnos.map((i) => (
+                <li><a href={i.href} rel="noopener">{i.label}<Arrow /></a></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3>Para docentes</h3>
+            <ul class="linklist">
+              {docentes.map((i) => (
+                <li><a href={i.href} rel="noopener">{i.label}<Arrow /></a></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <h3 class="forms__title" id="formularios">Formularios para descargar</h3>
+        <div class="community forms">
+          <div>
+            <h4>Estudiantes</h4>
+            <ul class="linklist linklist--forms">
+              {formsStudents.map((f) => (
+                <li>
+                  <a href={f.href} rel="noopener">
+                    <span>{f.label}</span>
+                    {f.kind && <span class="tag">{f.kind}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4>Docentes</h4>
+            <ul class="linklist linklist--forms">
+              {formsTeachers.map((f) => (
+                <li>
+                  <a href={f.href} rel="noopener">
+                    <span>{f.label}</span>
+                    {f.kind && <span class="tag">{f.kind}</span>}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section" id="contacto" aria-labelledby="contacto-title">
+      <div class="container">
+        <header class="section__head">
+          <h2 id="contacto-title">Contacto y ubicación</h2>
+          <p>Atención: {contact.hours.charAt(0).toLocaleLowerCase('es-AR') + contact.hours.slice(1)}.</p>
+        </header>
+        <div class="contact">
+          {contact.places.map((place) => (
+            <address class="contact__block">
+              <h3>{place.kind} {place.locality}</h3>
+              <p>{place.address}, {place.locality} ({place.postal})</p>
+              {(/sede/i.test(place.kind) && contact.phones.length > 0) || place.email ? (
+                <p>
+                  {/sede/i.test(place.kind) &&
+                    contact.phones.map((ph, i) => (
+                      <>
+                        {i > 0 && ' · '}
+                        <a href={ph.href}>{ph.label}</a>
+                      </>
+                    ))}
+                  {/sede/i.test(place.kind) && contact.phones.length > 0 && place.email && <br />}
+                  {place.email && <a href={`mailto:${place.email}`}>{place.email}</a>}
+                </p>
+              ) : null}
+              {place.mapUrl && (
+                <a class="link" href={place.mapUrl} rel="noopener">Ver en el mapa <Arrow /></a>
+              )}
+            </address>
+          ))}
+          {contact.social.length > 0 && (
+            <div class="contact__block">
+              <h3>Redes institucionales</h3>
+              <ul class="linklist linklist--plain">
+                {contact.social.map((s) => (
+                  <li><a href={s.href} rel="noopener">{s.label}</a></li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+  <dialog class="lightbox" data-lightbox aria-label="Vista ampliada">
+    <button class="lightbox__close" type="button" data-close aria-label="Cerrar vista ampliada">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" /></svg>
+    </button>
+    <div class="lightbox__stage" data-stage data-protected></div>
+  </dialog>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <img src="/img/logo.png" width="64" height="64" alt="" />
+        <p>
+          <strong>Instituto Superior de Formación Técnica N° 93</strong><br />
+          «Presidente Arturo Umberto Illia» · San Vicente, Buenos Aires
+        </p>
+      </div>
+      <ul class="footer__links">
+        <li><a href={SITE} rel="noopener">Sitio institucional completo</a></li>
+        <li><a href={link('datos-institucionales')} rel="noopener">Datos institucionales</a></li>
+        <li><a href={link('quien-fue-arturo-umberto-illia')} rel="noopener">{title('quien-fue-arturo-umberto-illia')}</a></li>
+        <li><a href={staticLinks.infod} rel="noopener">INFoD</a></li>
+        <li><a href={staticLinks.argentina} rel="noopener">Argentina.gob.ar</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <dialog class="lightbox" data-lightbox aria-label="Vista ampliada">
+    <button class="lightbox__close" type="button" data-close aria-label="Cerrar vista ampliada">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" /></svg>
+    </button>
+    <div class="lightbox__stage" data-stage data-protected></div>
+  </dialog>
+
+  <script is:inline>
+    (function () {
+      var reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var modalOpen = false;
+      var visibleClips = new Set();
+
+      /* Sin descarga: se bloquea el menú contextual y el arrastre de fotos y videos. */
+      document.addEventListener('contextmenu', function (e) {
+        if (e.target.closest('[data-protected]')) e.preventDefault();
+      });
+      document.addEventListener('dragstart', function (e) {
+        if (e.target.closest('[data-protected]')) e.preventDefault();
+      });
+
+      /* ---------- Videos ---------- */
+      function applyClip(clip) {
+        var video = clip.querySelector('video');
+        if (!video) return;
+        var inModal = !!clip.closest('[data-lightbox]');
+        var visible = inModal ? modalOpen : !modalOpen && visibleClips.has(clip);
+        if (visible && !reduceQuery.matches && !clip.dataset.userPaused) {
+          video.play().catch(function () {});
+        } else if (!video.paused) {
+          video.pause();
+        }
+      }
+
+      var clipObserver = 'IntersectionObserver' in window
+        ? new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) visibleClips.add(entry.target);
+              else visibleClips.delete(entry.target);
+              applyClip(entry.target);
+            });
+          }, { threshold: 0.45 })
+        : null;
+
+      function initClip(clip) {
+        var video = clip.querySelector('video');
+        var toggle = clip.querySelector('[data-action="toggle"]');
+        var sound = clip.querySelector('[data-action="sound"]');
+        video.muted = true;
+        video.removeAttribute('controls');
+        clip.dataset.state = 'paused';
+        delete clip.dataset.userPaused;
+
+        function sync() {
+          var playing = !video.paused;
+          clip.dataset.state = playing ? 'playing' : 'paused';
+          toggle.setAttribute('aria-label', playing ? 'Pausar video' : 'Reproducir video');
+          toggle.setAttribute('aria-pressed', String(!playing));
+        }
+        video.addEventListener('play', sync);
+        video.addEventListener('pause', sync);
+
+        toggle.addEventListener('click', function () {
+          if (video.paused) {
+            delete clip.dataset.userPaused;
+            video.play().catch(function () {});
+          } else {
+            clip.dataset.userPaused = '1';
+            video.pause();
+          }
+        });
+
+        if (sound) {
+          clip.dataset.sound = 'off';
+          sound.setAttribute('aria-pressed', 'false');
+          sound.setAttribute('aria-label', 'Activar sonido');
+          sound.addEventListener('click', function () {
+            video.muted = !video.muted;
+            sound.setAttribute('aria-pressed', String(!video.muted));
+            sound.setAttribute('aria-label', video.muted ? 'Activar sonido' : 'Silenciar');
+            clip.dataset.sound = video.muted ? 'off' : 'on';
+            if (!video.muted && video.paused) {
+              delete clip.dataset.userPaused;
+              video.play().catch(function () {});
+            }
+          });
+        }
+
+        if (clipObserver) clipObserver.observe(clip);
+      }
+
+      /* ---------- Carrusel infinito ---------- */
+      var viewport = document.querySelector('[data-viewport]');
+      var track = viewport && viewport.querySelector('[data-track]');
+      if (!track) {
+        document.querySelectorAll('[data-clip]').forEach(initClip);
+        return;
+      }
+
+      var originals = Array.prototype.slice.call(track.children);
+      for (var k = 0; k < 2; k++) {
+        originals.forEach(function (slide) {
+          var copy = slide.cloneNode(true);
+          copy.setAttribute('aria-hidden', 'true');
+          copy.removeAttribute('role');
+          copy.removeAttribute('aria-roledescription');
+          copy.removeAttribute('aria-label');
+          copy.dataset.clone = '';
+          copy.querySelectorAll('button').forEach(function (b) {
+            b.setAttribute('tabindex', '-1');
+          });
+          track.appendChild(copy);
+        });
+      }
+      viewport.classList.add('is-live');
+      document.querySelectorAll('[data-clip]').forEach(initClip);
+
+      var section = document.getElementById('experiencia');
+      var intro = section.querySelector('.experience__intro');
+      var btnPrev = section.querySelector('[data-dir="-1"]');
+      var btnNext = section.querySelector('[data-dir="1"]');
+      var btnPause = section.querySelector('[data-pause]');
+
+      var SPEED = 45; // px por segundo hacia la derecha
+      var W = 1; // ancho de un juego de diapositivas (incluye separación)
+      var edge = 0; // borde izquierdo del contenido de la página
+      var starts = []; // inicio de cada diapositiva dentro del primer juego
+      var pos = 0;
+      var vel = 0;
+      var anim = null;
+      var state = {
+        hover: false,
+        focus: false,
+        drag: false,
+        touch: false,
+        user: reduceQuery.matches,
+        seen: true,
+      };
+      var touchTimer = 0;
+
+      function measure() {
+        var frac = pos / W;
+        var base = originals[0].offsetLeft;
+        W = track.children[originals.length].offsetLeft - base;
+        starts = originals.map(function (s) { return s.offsetLeft - base; });
+        edge = intro.getBoundingClientRect().left - viewport.getBoundingClientRect().left;
+        pos = frac * W;
+        render();
+      }
+
+      function render() {
+        var p = ((pos % W) + W) % W;
+        track.style.transform = 'translate3d(' + (-(W - edge + p)).toFixed(2) + 'px,0,0)';
+      }
+
+      function running() {
+        return (
+          !reduceQuery.matches &&
+          !state.hover &&
+          !state.focus &&
+          !state.drag &&
+          !state.touch &&
+          !state.user &&
+          state.seen &&
+          !modalOpen &&
+          !document.hidden
+        );
+      }
+
+      var last = 0;
+      function frame(now) {
+        var dt = Math.min(0.05, (now - last) / 1000 || 0);
+        last = now;
+        if (anim) {
+          var k = Math.min(1, (now - anim.start) / anim.dur);
+          var e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+          pos = anim.from + (anim.to - anim.from) * e;
+          if (k >= 1) anim = null;
+          vel = 0;
+        } else if (!state.drag) {
+          vel += ((running() ? SPEED : 0) - vel) * Math.min(1, dt * 5);
+          if (vel > 0.01) pos += vel * dt;
+        }
+        render();
+        requestAnimationFrame(frame);
+      }
+
+      function candidates() {
+        var list = [];
+        for (var n = -2; n <= 3; n++) {
+          starts.forEach(function (s) { list.push(s + n * W); });
+        }
+        return list.sort(function (a, b) { return a - b; });
+      }
+
+      function glide(to) {
+        anim = {
+          from: pos,
+          to: to,
+          start: performance.now(),
+          dur: reduceQuery.matches ? 1 : 650,
+        };
+      }
+
+      function nudge(dir) {
+        var list = candidates();
+        var target;
+        if (dir > 0) target = list.find(function (c) { return c > pos + 4; });
+        else target = list.slice().reverse().find(function (c) { return c < pos - 4; });
+        if (target !== undefined) glide(target);
+      }
+
+      btnPrev.addEventListener('click', function () { nudge(-1); });
+      btnNext.addEventListener('click', function () { nudge(1); });
+
+      btnPause.addEventListener('click', function () {
+        state.user = !state.user;
+        btnPause.setAttribute('aria-pressed', String(state.user));
+        btnPause.setAttribute('aria-label', state.user ? 'Reanudar desplazamiento' : 'Pausar desplazamiento');
+        section.dataset.paused = state.user ? 'true' : 'false';
+      });
+      if (state.user) {
+        btnPause.setAttribute('aria-pressed', 'true');
+        btnPause.setAttribute('aria-label', 'Reanudar desplazamiento');
+      }
+      section.dataset.paused = state.user ? 'true' : 'false';
+
+      /* Pausa por hover (mouse), foco y arrastre */
+      viewport.addEventListener('pointerenter', function (e) {
+        if (e.pointerType === 'mouse') state.hover = true;
+      });
+      viewport.addEventListener('pointerleave', function (e) {
+        if (e.pointerType === 'mouse') state.hover = false;
+      });
+      viewport.addEventListener('focusin', function (e) {
+        viewport.scrollLeft = 0;
+        state.focus = e.target.matches(':focus-visible');
+        var slide = e.target.closest && e.target.closest('.slide');
+        var idx = slide ? originals.indexOf(slide) : -1;
+        if (idx > -1 && state.focus) {
+          var best = null;
+          for (var n = -2; n <= 3; n++) {
+            var c = starts[idx] + n * W;
+            if (best === null || Math.abs(c - pos) < Math.abs(best - pos)) best = c;
+          }
+          glide(best);
+        }
+      });
+      viewport.addEventListener('focusout', function () {
+        var el = document.activeElement;
+        state.focus = viewport.contains(el) && el.matches(':focus-visible');
+      });
+      viewport.addEventListener('scroll', function () { viewport.scrollLeft = 0; });
+
+      viewport.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); nudge(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); nudge(-1); }
+      });
+
+      var drag = null;
+      var lastDragEnd = 0;
+      viewport.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0 || e.target.closest('.clip__bar, .slide__expand')) return;
+        drag = { id: e.pointerId, x: e.clientX, pos0: pos, moved: false };
+        if (e.pointerType !== 'mouse') {
+          state.touch = true;
+          clearTimeout(touchTimer);
+        }
+      });
+      viewport.addEventListener('pointermove', function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var dx = e.clientX - drag.x;
+        if (!drag.moved && Math.abs(dx) > 6) {
+          drag.moved = true;
+          state.drag = true;
+          anim = null;
+          viewport.setPointerCapture(e.pointerId);
+          viewport.classList.add('is-dragging');
+        }
+        if (drag.moved) {
+          pos = drag.pos0 - dx;
+          vel = 0;
+        }
+      });
+      function endDrag(e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        if (drag.moved) lastDragEnd = performance.now();
+        state.drag = false;
+        viewport.classList.remove('is-dragging');
+        drag = null;
+        if (state.touch) {
+          touchTimer = setTimeout(function () { state.touch = false; }, 2500);
+        }
+      }
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+          state.seen = entries[0].isIntersecting;
+        }).observe(section);
+      }
+
+      reduceQuery.addEventListener('change', function () {
+        state.user = reduceQuery.matches;
+        btnPause.setAttribute('aria-pressed', String(state.user));
+        btnPause.setAttribute('aria-label', state.user ? 'Reanudar desplazamiento' : 'Pausar desplazamiento');
+        section.dataset.paused = state.user ? 'true' : 'false';
+        visibleClips.forEach(applyClip);
+      });
+
+      /* ---------- Vista ampliada ---------- */
+      var dialog = document.querySelector('[data-lightbox]');
+      var stage = dialog.querySelector('[data-stage]');
+      var openedClip = null;
+
+      function openLightbox(slide) {
+        var clip = slide.querySelector('[data-clip]');
+        stage.replaceChildren();
+        if (clip) {
+          var copy = clip.cloneNode(true);
+          var video = copy.querySelector('video');
+          video.preload = 'auto';
+          var w = Number(video.getAttribute('width'));
+          var h = Number(video.getAttribute('height'));
+          copy.querySelector('.clip__frame').style.aspectRatio = w + ' / ' + h;
+          stage.appendChild(copy);
+          initClip(copy);
+          openedClip = copy;
+        } else {
+          var img = slide.querySelector('img');
+          var fig = document.createElement('figure');
+          fig.className = 'media';
+          var big = new Image();
+          big.src = img.currentSrc || img.src;
+          big.alt = img.alt;
+          big.draggable = false;
+          fig.appendChild(big);
+          var cap = slide.querySelector('figcaption');
+          if (cap) fig.appendChild(cap.cloneNode(true));
+          stage.appendChild(fig);
+        }
+        modalOpen = true;
+        visibleClips.forEach(applyClip);
+        dialog.showModal();
+        if (openedClip) applyClip(openedClip);
+      }
+
+      dialog.addEventListener('close', function () {
+        modalOpen = false;
+        if (openedClip) {
+          if (clipObserver) clipObserver.unobserve(openedClip);
+          visibleClips.delete(openedClip);
+          openedClip = null;
+        }
+        stage.replaceChildren();
+        visibleClips.forEach(applyClip);
+      });
+      dialog.addEventListener('click', function (e) {
+        if (e.target === dialog || e.target === stage || e.target.closest('[data-close]')) dialog.close();
+      });
+
+      viewport.addEventListener('click', function (e) {
+        if (performance.now() - lastDragEnd < 300) return;
+        if (e.target.closest('.clip__bar')) return;
+        var slide = e.target.closest('.slide');
+        if (slide) openLightbox(slide);
+      });
+
+      measure();
+      window.addEventListener('load', measure);
+      if ('ResizeObserver' in window) new ResizeObserver(measure).observe(viewport);
+      requestAnimationFrame(frame);
+    })();
+  </script>
+  <script is:inline>
+    (function () {
+      var btn = document.querySelector('.menu-toggle');
+      var nav = document.getElementById('menu');
+      if (!btn || !nav) return;
+      function set(open) {
+        btn.setAttribute('aria-expanded', String(open));
+        nav.classList.toggle('is-open', open);
+      }
+      btn.addEventListener('click', function () {
+        set(btn.getAttribute('aria-expanded') !== 'true');
+      });
+      nav.addEventListener('click', function (e) {
+        if (e.target.closest('a')) set(false);
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') set(false);
+      });
+    })();
+
+  </script>
+</Base>
